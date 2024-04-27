@@ -5,23 +5,25 @@
 #define Gb sizeof(int)*2*128*1024*1024
 
 
-void ReadAllocate(size_t numGb, size_t step){
-    int *a = (int*)malloc(numGb*step*sizeof(int));
+void ReadAllocate(size_t numGb, double stepGb){
+    int *a = (int*)malloc(numGb*Gb*sizeof(int));
+    volatile int r;
+    size_t step = stepGb*Gb;
+    size_t num = numGb*Gb;
     size_t i = 0;
     char c;
-    volatile int r;
     size_t x = 0;
-    while (i < numGb){
-        x = i*step;
-        while (x < (i + 1)*step){
+    while (i < num){
+        while (x < i){
             r = a[x];
-            ++x;
+            x+=10;
         }
-        r = a[i];
-        ++i;
-        std::cout << "Allocated " << step/(Gb) << " Gb\n";
+        i+=step;
+        std::cout << "Allocated " << stepGb << " Gb\n";
         system("free");
         std::cout << "Continue? y/n\n";
+        std::cout << x << '\n';
+        std::cout << i << '\n';
         std::cin >> c;
         if (c != 'y'){
             break;
@@ -30,15 +32,16 @@ void ReadAllocate(size_t numGb, size_t step){
     free(a);
 }
 
-void WriteAllocate(size_t numGb, size_t step){
-    int **a = (int**)malloc(step*sizeof(int*));
+void WriteAllocate(size_t numGb, double stepGb){
+    int **a = (int**)malloc(stepGb*sizeof(int*));
+    size_t step = stepGb*Gb;
     size_t i = 0;
     char c;
     while (i < numGb){
         a[i] = (int*)malloc(step);
         memset((void*)a[i], 1, step);
         ++i;
-        std::cout << "Allocated " << step/(Gb) << " Gb\n";
+        std::cout << "Allocated " << stepGb << " Gb\n";
         system("free");
         std::cout << "Continue? y/n\n";
         std::cin >> c;
@@ -46,7 +49,7 @@ void WriteAllocate(size_t numGb, size_t step){
             break;
         }
     }
-    for (size_t x = 0; x < numGb; ++x){
+    for (size_t x = 0; x < (size_t)(numGb/stepGb); ++x){
         free((void*)a[i]);
     }
     free(a);
@@ -54,6 +57,6 @@ void WriteAllocate(size_t numGb, size_t step){
 
 int main(){
     system("echo 1 | sudo tee /proc/sys/vm/overcommit_memory"); //default value = 0
-    WriteAllocate(8, Gb); //8Gb will allocate, 1Gb step
+    ReadAllocate(8, 1); //8Gb will be allocated, 1Gb step
     return 0;
 }
