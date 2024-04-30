@@ -2,7 +2,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
-#include <chrono>
 
 namespace{
     size_t Gb = 1 << 30; //(in bytes)
