@@ -2,11 +2,14 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
-#define Gb sizeof(int)*2*128*1024*1024
+#include <chrono>
 
+namespace{
+    size_t Gb = 1 << 30; //(in bytes)
+}; //namespace 
 
 void ReadAllocate(size_t numGb, double stepGb){
-    int *a = (int*)malloc(numGb*Gb*sizeof(int));
+    int *a = (int*)malloc(numGb*Gb*4);
     volatile int r;
     size_t step = stepGb*Gb;
     size_t num = numGb*Gb;
@@ -14,16 +17,14 @@ void ReadAllocate(size_t numGb, double stepGb){
     char c;
     size_t x = 0;
     while (i < num){
+        i += step;
         while (x < i){
             r = a[x];
-            x+=10;
+            x += 10000;
         }
-        i+=step;
         std::cout << "Allocated " << stepGb << " Gb\n";
         system("free");
         std::cout << "Continue? y/n\n";
-        std::cout << x << '\n';
-        std::cout << i << '\n';
         std::cin >> c;
         if (c != 'y'){
             break;
